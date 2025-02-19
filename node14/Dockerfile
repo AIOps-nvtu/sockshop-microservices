@@ -4,15 +4,12 @@ FROM jokernvt/sockshop-payment:latest AS base
 #FROM jokernvt/sockshop-payment:delay AS base
 
 
-# Stage 2: Use Red Hat UBI Minimal as the final base image
 FROM ubuntu:noble AS stage-1
 
-# Remove conflicting package and install dependencies, including Node.js 20
 RUN apt update -y \
     && apt install -y curl wget gnupg2 tzdata openssl ca-certificates fontconfig gzip tar findutils ipset iptables iproute2 \
     && apt clean all
 
-# Copy Payment Service binary and dependencies from `weaveworksdemos/payment:0.4.3`
 WORKDIR /payment
 COPY --from=base /app /payment/
 

@@ -1,16 +1,13 @@
 FROM jokernvt/sockshop-user:latest AS base
 
-# Stage 2: Use Red Hat UBI Minimal as the final base image
 FROM ubuntu:noble AS stage-1
 
-# Remove conflicting package and install dependencies, including Node.js 20
 RUN apt update -y \
     && apt install -y curl wget gnupg2 tzdata openssl ca-certificates fontconfig gzip tar findutils ipset iptables iproute2 \
     && apt clean all
 
-# Copy Payment Service binary and dependencies from `weaveworksdemos/user:0.4.3`
 WORKDIR /user
-COPY --from=base /app /user/
+COPY --from=base /user /user/
 
 # Install Chaosd
 RUN mkdir -p /usr/src/chaosd \
@@ -43,7 +40,7 @@ RUN chmod 755 /etc/passwd
 RUN chmod 755 /etc/group
 
 # Set permissions for the user service
-RUN chmod +x /user/app \
+RUN chmod +x /user/user \
     && chown -R ${SERVICE_USER}:${SERVICE_GROUP} /user
 
 # Copy custom startup script
