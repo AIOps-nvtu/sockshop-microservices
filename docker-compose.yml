@@ -69,6 +69,7 @@ services:
       - /tmp:rw,noexec,nosuid
   orders:
     image: weaveworksdemos/orders:0.4.7
+    # image: orders-chaosd:latest
     hostname: orders
     restart: always
     cap_drop:
@@ -107,6 +108,7 @@ services:
     environment:
       - JAVA_OPTS=-Xms64m -Xmx128m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom -Dspring.zipkin.enabled=false
   queue-master:
+    # image: queue-master-chaosd:latest
     image: weaveworksdemos/queue-master:0.3.1
     hostname: queue-master
     volumes:
