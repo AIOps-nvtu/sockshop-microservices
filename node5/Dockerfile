@@ -11,7 +11,7 @@ RUN apt update -y \
 # Copy Payment Service binary and dependencies from `weaveworksdemos/catalogue:0.4.3`
 WORKDIR /catalogue
 COPY --from=base /app /catalogue/
-COPY --from=base /go/src/github.com/microservices-demo/catalogue/images/ /catalogue/images/
+COPY --from=base /images/ /catalogue/images/
 
 # Install Chaosd
 RUN mkdir -p /usr/src/chaosd \

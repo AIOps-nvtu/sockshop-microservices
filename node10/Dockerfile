@@ -56,7 +56,6 @@ RUN mkdir -p /opt/app-root/src/.npm \
 
 # Copy the startup script
 COPY front-end-start.sh /
-COPY datadog.js /
 # Ensure the script is executable
 RUN chmod +x /front-end-start.sh
 RUN cd /front-end/usr/src/app \
