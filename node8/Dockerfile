@@ -1,5 +1,8 @@
-FROM jokernvt/sockshop-user:latest AS base
+#FROM jokernvt/sockshop-user:latest AS base
+FROM jokernvt/sockshop-user:normal AS base
+#FROM jokernvt/sockshop-user:delay AS base
 
+# Stage 2: Use Red Hat UBI Minimal as the final base image
 FROM ubuntu:noble AS stage-1
 
 RUN apt update -y \

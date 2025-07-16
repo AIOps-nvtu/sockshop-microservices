@@ -1,0 +1,100 @@
+services:
+  session-db:
+    image: redis:7.2
+    hostname: session-db
+    network_mode: host
+    deploy:
+      mode: replicated 
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.redis == master
+    volumes:
+      - /opt/cloud/session-db/scripts:/scripts
+    entrypoint: ["/scripts/entrypoint-cluster.sh"]
+            #    command: >
+            #      sh -c "redis-server --cluster-enabled yes
+            #                  --cluster-config-file nodes.conf 
+            #                  --cluster-node-timeout 5000
+            #                  --appendonly yes"
+
+  master-node-1:
+    image: redis:7.2
+    hostname: master-node-1
+    network_mode: host
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.node == node-1
+    command: >
+      sh -c "redis-server --cluster-enabled yes
+                  --cluster-config-file nodes.conf 
+                  --cluster-node-timeout 5000
+                  --appendonly yes"
+
+  master-node-2:
+    image: redis:7.2
+    hostname: master-node-2
+    network_mode: host
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.node == node-1
+    command: >
+      sh -c "redis-server --cluster-enabled yes
+                  --cluster-config-file nodes.conf 
+                  --cluster-node-timeout 5000
+                  --appendonly yes"
+
+
+  slave-node-1:
+    image: redis:7.2
+    hostname: slave-node-1
+    network_mode: host
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.node == node-1
+    command: >
+      sh -c "redis-server --cluster-enabled yes
+                  --cluster-config-file nodes.conf 
+                  --cluster-node-timeout 5000
+                  --appendonly yes"
+
+  slave-node-2:
+    image: redis:7.2
+    hostname: slave-node-2
+    network_mode: host
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.node == node-1
+    command: >
+      sh -c "redis-server --cluster-enabled yes
+                  --cluster-config-file nodes.conf 
+                  --cluster-node-timeout 5000
+                  --appendonly yes"
+  
+  slave-node-3:
+    image: redis:7.2
+    hostname: slave-node-3
+    network_mode: host
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.node == node-1
+    command: >
+      sh -c "redis-server --cluster-enabled yes
+                  --cluster-config-file nodes.conf 
+                  --cluster-node-timeout 5000
+                  --appendonly yes"

@@ -1,0 +1,144 @@
+services:
+  user-db:
+    image: mongo:5.0
+    hostname: user-db
+    deploy:
+      replicas: 2
+      placement:
+        constraints:
+          - node.labels.node == node-7
+    restart: always
+    volumes:
+      - /opt/cloud/user-db/scripts:/scripts
+    entrypoint: ["/scripts/entrypoint-route-init.sh"]
+
+  # Config Servers
+  user-db-configsvr01:
+    image: mongo:5.0
+    hostname: mongo-config-01
+    deploy:
+      placement:
+        constraints:
+          - node.labels.node == node-7
+    command: mongod --port 27017 --configsvr --replSet rs-config-server
+    restart: always
+    volumes:
+      - /opt/cloud/user-db/scripts:/scripts
+    entrypoint: ["/scripts/entrypoint-configserver.sh"]
+
+  user-db-configsvr02:
+    image: mongo:5.0
+    hostname: user-db-mongo-config-02
+    deploy:
+      placement:
+        constraints:
+          - node.labels.node == node-7
+    command: mongod --port 27017 --configsvr --replSet rs-config-server
+    restart: always
+
+  user-db-configsvr03:
+    image: mongo:5.0
+    hostname: user-db-mongo-config-03
+    deploy:
+      placement:
+        constraints:
+          - node.labels.node == node-7
+    command: mongod --port 27017 --configsvr --replSet rs-config-server
+    restart: always
+
+  # Shards
+  user-db-shard01-a:
+    image: mongo:5.0
+    hostname: user-db-shard-01-node-a
+    deploy:
+      placement:
+        constraints:
+          - node.labels.node == node-7
+    volumes:
+      - /opt/cloud/user-db/scripts:/scripts
+    restart: always
+    entrypoint: ["/scripts/entrypoint-shard01.sh"]
+
+  user-db-shard01-b:
+    image: mongo:5.0
+    hostname: user-db-shard-01-node-b
+    deploy:
+      placement:
+        constraints:
+          - node.labels.node == node-7
+    command: mongod --port 27017 --shardsvr --replSet rs-shard-01
+    restart: always
+
+  user-db-shard01-c:
+    image: mongo:5.0
+    hostname: user-db-shard-01-node-c
+    deploy:
+      placement:
+        constraints:
+          - node.labels.node == node-7
+    command: mongod --port 27017 --shardsvr --replSet rs-shard-01
+    restart: always
+
+  user-db-shard02-a:
+    image: mongo:5.0
+    hostname: user-db-shard-02-node-a
+    deploy:
+      placement:
+        constraints:
+          - node.labels.node == node-7
+    restart: always
+    volumes:
+      - /opt/cloud/user-db/scripts:/scripts
+    entrypoint: ["/scripts/entrypoint-shard02.sh"]
+
+  user-db-shard02-b:
+    image: mongo:5.0
+    hostname: user-db-shard-02-node-b
+    deploy:
+      placement:
+        constraints:
+          - node.labels.node == node-7
+    command: mongod --port 27017 --shardsvr --replSet rs-shard-02
+    restart: always
+
+  user-db-shard02-c:
+    image: mongo:5.0
+    hostname: user-db-shard-02-node-c
+    deploy:
+      placement:
+        constraints:
+          - node.labels.node == node-7
+    command: mongod --port 27017 --shardsvr --replSet rs-shard-02
+    restart: always
+
+  user-db-shard03-a:
+    image: mongo:5.0
+    hostname: user-db-shard-03-node-a
+    deploy:
+      placement:
+        constraints:
+          - node.labels.node == node-7
+    volumes:
+      - /opt/cloud/user-db/scripts:/scripts
+    restart: always
+    entrypoint: ["/scripts/entrypoint-shard03.sh"]
+
+  user-db-shard03-b:
+    image: mongo:5.0
+    hostname: user-db-shard-03-node-b
+    deploy:
+      placement:
+        constraints:
+          - node.labels.node == node-7
+    command: mongod --port 27017 --shardsvr --replSet rs-shard-03
+    restart: always
+
+  user-db-shard03-c:
+    image: mongo:5.0
+    hostname: user-db-shard-03-node-c
+    deploy:
+      placement:
+        constraints:
+          - node.labels.node == node-7
+    command: mongod --port 27017 --shardsvr --replSet rs-shard-03
+    restart: always

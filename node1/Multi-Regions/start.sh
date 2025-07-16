@@ -1,0 +1,1 @@
+docker stack deploy -c session-db/docker-compose.yml -c orders-db/docker-compose.yml -c user-db/docker-compose.yml -c carts-db/docker-compose.yml -c docker-compose.yml sockshop

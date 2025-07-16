@@ -1,0 +1,144 @@
+services:
+  carts-db:
+    image: mongo:5.0
+    hostname: carts-db
+    deploy:
+      replicas: 2
+      placement:
+        constraints:
+          - node.labels.node == node-3
+    restart: always
+    volumes:
+      - /opt/cloud/carts-db/scripts:/scripts
+    entrypoint: ["/scripts/entrypoint-route-init.sh"]
+
+  # Config Servers
+  carts-db-configsvr01:
+    image: mongo:5.0
+    hostname: mongo-config-01
+    deploy:
+      placement:
+        constraints:
+          - node.labels.node == node-3
+    command: mongod --port 27017 --configsvr --replSet rs-config-server
+    restart: always
+    volumes:
+      - /opt/cloud/carts-db/scripts:/scripts
+    entrypoint: ["/scripts/entrypoint-configserver.sh"]
+
+  carts-db-configsvr02:
+    image: mongo:5.0
+    hostname: carts-db-mongo-config-02
+    deploy:
+      placement:
+        constraints:
+          - node.labels.node == node-3
+    command: mongod --port 27017 --configsvr --replSet rs-config-server
+    restart: always
+
+  carts-db-configsvr03:
+    image: mongo:5.0
+    hostname: carts-db-mongo-config-03
+    deploy:
+      placement:
+        constraints:
+          - node.labels.node == node-3
+    command: mongod --port 27017 --configsvr --replSet rs-config-server
+    restart: always
+
+  # Shards
+  carts-db-shard01-a:
+    image: mongo:5.0
+    hostname: carts-db-shard-01-node-a
+    deploy:
+      placement:
+        constraints:
+          - node.labels.node == node-3
+    volumes:
+      - /opt/cloud/carts-db/scripts:/scripts
+    restart: always
+    entrypoint: ["/scripts/entrypoint-shard01.sh"]
+
+  carts-db-shard01-b:
+    image: mongo:5.0
+    hostname: carts-db-shard-01-node-b
+    deploy:
+      placement:
+        constraints:
+          - node.labels.node == node-3
+    command: mongod --port 27017 --shardsvr --replSet rs-shard-01
+    restart: always
+
+  carts-db-shard01-c:
+    image: mongo:5.0
+    hostname: carts-db-shard-01-node-c
+    deploy:
+      placement:
+        constraints:
+          - node.labels.node == node-3
+    command: mongod --port 27017 --shardsvr --replSet rs-shard-01
+    restart: always
+
+  carts-db-shard02-a:
+    image: mongo:5.0
+    hostname: carts-db-shard-02-node-a
+    deploy:
+      placement:
+        constraints:
+          - node.labels.node == node-3
+    restart: always
+    volumes:
+      - /opt/cloud/carts-db/scripts:/scripts
+    entrypoint: ["/scripts/entrypoint-shard02.sh"]
+
+  carts-db-shard02-b:
+    image: mongo:5.0
+    hostname: carts-db-shard-02-node-b
+    deploy:
+      placement:
+        constraints:
+          - node.labels.node == node-3
+    command: mongod --port 27017 --shardsvr --replSet rs-shard-02
+    restart: always
+
+  carts-db-shard02-c:
+    image: mongo:5.0
+    hostname: carts-db-shard-02-node-c
+    deploy:
+      placement:
+        constraints:
+          - node.labels.node == node-3
+    command: mongod --port 27017 --shardsvr --replSet rs-shard-02
+    restart: always
+
+  carts-db-shard03-a:
+    image: mongo:5.0
+    hostname: carts-db-shard-03-node-a
+    deploy:
+      placement:
+        constraints:
+          - node.labels.node == node-3
+    volumes:
+      - /opt/cloud/carts-db/scripts:/scripts
+    restart: always
+    entrypoint: ["/scripts/entrypoint-shard03.sh"]
+
+  carts-db-shard03-b:
+    image: mongo:5.0
+    hostname: carts-db-shard-03-node-b
+    deploy:
+      placement:
+        constraints:
+          - node.labels.node == node-3
+    command: mongod --port 27017 --shardsvr --replSet rs-shard-03
+    restart: always
+
+  carts-db-shard03-c:
+    image: mongo:5.0
+    hostname: carts-db-shard-03-node-c
+    deploy:
+      placement:
+        constraints:
+          - node.labels.node == node-3
+    command: mongod --port 27017 --shardsvr --replSet rs-shard-03
+    restart: always

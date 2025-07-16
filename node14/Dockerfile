@@ -1,7 +1,9 @@
 # Stage 1: Extract `weaveworksdemos/payment:0.4.3`
 #FROM weaveworksdemos/payment:0.4.3 AS base
-FROM jokernvt/sockshop-payment:latest AS base
+# FROM jokernvt/sockshop-payment:latest AS base
 #FROM jokernvt/sockshop-payment:delay AS base
+FROM jokernvt/sockshop-payment:normal AS base
+#FROM jokernvt/sockshop-payment:normal-delay AS base
 
 
 FROM ubuntu:noble AS stage-1

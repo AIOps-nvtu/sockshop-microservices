@@ -1,7 +1,9 @@
-FROM weaveworksdemos/front-end:0.3.12 AS base
+#FROM weaveworksdemos/front-end:0.3.12 AS base
+FROM jokernvt/sockshop-frontend:latest AS base
 
 # Use Ubuntu as the base image
 FROM ubuntu:noble AS stage-1
+
 
 # Remove conflicting package and install dependencies, including Node.js 20
 RUN apt update -y \
@@ -44,7 +46,8 @@ RUN apt install -y util-linux \
 # Verify Node.js version and install npm@11
 RUN node -v \
     && npm -v \
-    && npm install -g npm@11
+    && npm install -g npm@11 
+
 RUN chmod 755 /etc/passwd
 RUN chmod 755 /etc/group
 
@@ -56,23 +59,29 @@ RUN mkdir -p /opt/app-root/src/.npm \
 
 # Copy the startup script
 COPY front-end-start.sh /
+
 # Ensure the script is executable
 RUN chmod +x /front-end-start.sh
 RUN cd /front-end/usr/src/app \
-    && npm install dd-trace --save \
-    && npm install @datadog/browser-rum --save \
-    && sed -i "1s/^/const tracer = require('dd-trace').init({env: 'sockshop-apm', service: 'sockshop-frontend', version: '0.0.3'});\n/" server.js
-#    && sed -i "1s/^/import { core } from 'lodash';\n/" server.js
+    && npm install @aws/aws-distro-opentelemetry-node-autoinstrumentation --save
+#    && npm install dd-trace --save \
+#    && npm install @datadog/browser-rum --save \
+#    && sed -i "1s/^/const tracer = require('@aws\/aws-distro-opentelemetry-node-autoinstrumentation\/register');\n/" server.js
+#    && sed -i "1s/^/const tracer = require('dd-trace').init({env: 'sockshop-apm', service: 'sockshop-frontend', version: '0.0.3'});\n/" server.js
+#    && sed -i "1s/^/import { core } from 'lodash';\n/" server.js 
 #    && cat /datadog.js server.js > temp.js \
 #    && cat temp.js > server.js \
 #    && rm temp.js
+ENV OTEL_METRICS_EXPORTER=none \
+    OTEL_LOGS_EXPORTER=none \
+    OTEL_AWS_APPLICATION_SIGNALS_ENABLED=true \
+    OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf \
+    OTEL_TRACES_SAMPLER=xray \
+    OTEL_TRACES_SAMPLER_ARG="endpoint=http://host.docker.internal:2000" \
+    OTEL_AWS_APPLICATION_SIGNALS_EXPORTER_ENDPOINT=http://host.docker.internal:4316/v1/metrics \
+    OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://host.docker.internal:4316/v1/traces \
+    OTEL_RESOURCE_ATTRIBUTES="aws.log.group.names=APPLICATION-ApplicationInsights-sockshop,service.name=sockshop-frontend" 
 
-ENV DD_ENV=sockshop-apm
-ENV DD_SERVICE=sockshop-frontend
-ENV DD_LOGS_INJECTION=true
-ENV DD_TRACE_STARTUP_LOGS=true
-ENV DD_RUNTIME_METRICS_ENABLED=true
-ENV DD_VERSION=0.0.2
 USER root
 
 # Run the start script

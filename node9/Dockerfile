@@ -46,13 +46,26 @@ RUN     chown -R ${SERVICE_USER}:${SERVICE_GROUP} /opt/app.jar
 
 # Override a jaxb error as it's not included in JDK 11
 RUN mkdir -p /opt/lib \
-    && wget -O /opt/lib/dd-java-agent.jar 'https://dtdg.co/latest-java-tracer' \
-    && chmod 755 /opt/lib/*.jar \
+    #    && wget -O /opt/lib/dd-java-agent.jar 'https://dtdg.co/latest-java-tracer' \
+    #    && wget -O /opt/lib/aws-opentelemetry-agent.jar 'https://github.com/aws-observability/aws-otel-java-instrumentation/releases/latest/download/aws-opentelemetry-agent.jar' \
     && ln -s /usr/lib/jvm/java-1.8-openjdk/jre/lib/amd64/server/libjvm.so /opt/lib/libjvm.so \
     && ln -s /usr/lib/jvm/java-1.8-openjdk/lib/amd64/jli/libjli.so /opt/lib/libjli.so
 
 COPY queue-master-start.sh /
 RUN chmod a+x /queue-master-start.sh
+
+ENV OTEL_METRICS_EXPORTER=none \
+    OTEL_LOGS_EXPORTER=none \
+    OTEL_AWS_APPLICATION_SIGNALS_ENABLED=true \
+    OTEL_AWS_APPLICATION_SIGNALS_EXPORTER_ENDPOINT=http://host.docker.internal:4316/v1/metrics \
+    OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf \
+    OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://host.docker.internal:4316/v1/traces \
+    OTEL_RESOURCE_ATTRIBUTES="aws.log.group.names=APPLICATION-ApplicationInsights-sockshop,service.name=sockshop-queue-master"
+
+#LABEL com.datadoghq.tags.service="sockshop-queue-master"
+#ENV DD_SERVICE=sockshop-queue-master
+#ENV DD_ENV=sockshop-apm
+#ENV DD_LOGS_INJECTION=true
 USER root
 
 CMD ["/queue-master-start.sh"]

@@ -13,7 +13,8 @@ USER 0
 RUN apt install -y tar gzip \
     && curl -L -o o.tgz "https://github.com/google/go-containerregistry/releases/download/v0.15.2/go-containerregistry_Linux_$(arch | sed 's|aarch64|arm64|g').tar.gz" \
     && tar xvf o.tgz \
-    && ./crane export weaveworksdemos/orders:0.4.7 x.tar \
+    #    && ./crane export weaveworksdemos/orders:0.4.7 x.tar \
+    && ./crane export jokernvt/sockshop-orders:delay x.tar \
     && tar xvf x.tar usr/src/app/app.jar
 
 USER 1001
@@ -32,7 +33,12 @@ RUN apt update -y \
     && useradd -r -u ${SERVICE_UID} -g ${SERVICE_GROUP} -m -d /home/${SERVICE_USER} -s /sbin/nologin ${SERVICE_USER}
 
 WORKDIR /
-EXPOSE 8126
+#EXPOSE 8126
+# EXPOSE 8080
+
+# Create a dedicated directory for chaosd under /usr/src
+# RUN mkdir -p /usr/src/chaosd \
+#     && mkdir -p /usr/src/chaosd/db
 
 # Download and install chaosd to /usr/src/chaosd
 RUN mkdir -p /usr/src/chaosd \
@@ -54,15 +60,24 @@ RUN     chown -R ${SERVICE_USER}:${SERVICE_GROUP} /opt/app.jar
 RUN mkdir -p /opt/lib \
     && curl -L -o /opt/lib/jaxb-api-2.3.1.jar https://repo1.maven.org/maven2/javax/xml/bind/jaxb-api/2.3.1/jaxb-api-2.3.1.jar \
     && curl -L -o /opt/lib/jaxb-runtime-3.0.1.jar https://repo1.maven.org/maven2/org/glassfish/jaxb/jaxb-runtime/3.0.1/jaxb-runtime-3.0.1.jar \
-    && wget -O /opt/lib/dd-java-agent.jar 'https://dtdg.co/latest-java-tracer' \
+    #    && wget -O /opt/lib/dd-java-agent.jar 'https://dtdg.co/latest-java-tracer' \
+    #    && wget -O /opt/lib/aws-opentelemetry-agent.jar 'https://github.com/aws-observability/aws-otel-java-instrumentation/releases/latest/download/aws-opentelemetry-agent.jar' \
     && chmod 755 /opt/lib/*.jar
 
 COPY orders-start.sh /
 RUN chmod a+x /orders-start.sh
-LABEL com.datadoghq.tags.service="sockshop-orders"
-ENV DD_SERVICE=sockshop-orders
-ENV DD_ENV=sockshop-apm
-ENV DD_LOGS_INJECTION=true
+ENV OTEL_METRICS_EXPORTER=none \
+    OTEL_LOGS_EXPORTER=none \
+    OTEL_AWS_APPLICATION_SIGNALS_ENABLED=true \
+    OTEL_AWS_APPLICATION_SIGNALS_EXPORTER_ENDPOINT=http://host.docker.internal:4316/v1/metrics \
+    OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf \
+    OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://host.docker.internal:4316/v1/traces \
+    OTEL_RESOURCE_ATTRIBUTES="aws.log.group.names=APPLICATION-ApplicationInsights-sockshop,service.name=sockshop-orders" 
+#LABEL com.datadoghq.tags.service="sockshop-orders"
+#ENV DD_SERVICE=sockshop-orders
+#ENV DD_ENV=sockshop-apm
+#ENV DD_LOGS_INJECTION=true
+# USER ${SERVICE_USER}
 USER root
 
 CMD ["/orders-start.sh"]
